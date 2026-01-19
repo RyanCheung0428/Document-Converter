@@ -1,0 +1,24 @@
+# Core dependencies
+Pillow>=10.0.0
+python-docx>=1.0.0
+openpyxl>=3.1.0
+PyPDF2>=3.0.0
+pdf2docx>=0.5.6
+img2pdf>=0.5.0
+python-magic-bin>=0.4.14
+reportlab>=4.0.0
+
+# GUI (optional - for modern interface)
+customtkinter>=5.2.0
+
+# Excel to PDF
+xlsxwriter>=3.1.0
+
+# Word to PDF (requires LibreOffice or Word)
+docx2pdf>=0.1.8
+
+# Image processing
+opencv-python>=4.8.0
+
+# Building EXE
+pyinstaller>=6.0.0
