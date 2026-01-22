@@ -130,3 +130,7 @@ Thumbs.db
 
 # Custom
 transform/
+
+# Web app temporary directories
+uploads/
+outputs/

@@ -1,163 +1,224 @@
-# Universal File Format Converter
+# Universal File Converter - Web 版本
 
-A powerful, user-friendly desktop application for converting between various file formats including documents (Word, Excel, PDF) and images (PNG, JPG, BMP, TIFF, etc.).
+🌐 一個現代化、基於 Web 的通用文件格式轉換器，支援多種文件格式之間的轉換。
 
-## Features
+## ✨ 特色功能
 
-- **Automatic Format Detection**: No need to manually select the input format - the application automatically detects it!
-- **Document Conversions**: 
-  - PDF ↔ Word (DOCX)
-  - Excel ↔ PDF
-  - Word → PDF
-- **Image Conversions**: 
-  - Between formats: PNG, JPG, JPEG, BMP, TIFF, GIF, WEBP, ICO
-  - Images → PDF
-  - PDF → Image (first page)
-- **Batch Processing**: Convert multiple files at once
-- **User-Friendly GUI**: Simple and intuitive interface
-- **Standalone EXE**: No Python installation required
+- 🎨 **現代化界面** - 簡潔美觀的用戶界面，支援暗色/亮色模式
+- 📤 **拖放上傳** - 直接拖放文件到網頁即可上傳
+- 🔍 **自動偵測** - 自動識別文件格式類型
+- ⚡ **快速轉換** - 高效的文件格式轉換
+- 📱 **響應式設計** - 完美支援桌面和移動設備
+- 🔒 **安全可靠** - 文件大小限制和格式驗證
 
-## Installation
+## 🚀 快速開始
 
-### From Source
+### 1. 安裝依賴
 
-1. Clone or download this repository
-2. Create a virtual environment:
-   ```bash
-   python -m venv .venv
-   ```
-3. Activate the virtual environment:
-   ```bash
-   # Windows
-   .venv\Scripts\activate
-   
-   # Linux/Mac
-   source .venv/bin/activate
-   ```
-4. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-5. Run the application:
-   ```bash
-   python main.py
-   ```
-
-### Build EXE
-
-To create a standalone EXE file:
-
-**Windows:**
-```bash
-build.bat
-```
-
-The EXE will be created in the `dist` folder and can be distributed without Python.
-
-**Manual Build:**
-```bash
-pyinstaller FileConverter.spec --clean
-```
-
-## Usage
-
-1. **Launch the Application**
-   - Run `main.py` or double-click `FileConverter.exe`
-
-2. **Select Files**
-   - Click "Browse Files" to select one or more files
-   - The application will automatically detect the file format
-
-3. **Choose Target Format**
-   - Select the desired output format from the dropdown
-   - Available formats depend on the input file type
-
-4. **Select Output Folder**
-   - Choose where to save the converted files
-   - Default is the Downloads folder
-
-5. **Convert**
-   - Click "Convert Files" to start the conversion
-   - Progress will be shown in real-time
-
-## Supported Conversions
-
-### Document Formats
-- **PDF to Word**: Converts PDF to editable DOCX
-- **Word to PDF**: Converts DOCX/DOC to PDF
-- **Excel to PDF**: Converts XLSX/XLS to PDF
-- **PDF to Image**: Extracts first page as PNG/JPG
-
-### Image Formats
-- Convert between: PNG, JPG, JPEG, BMP, TIFF, GIF, WEBP, ICO
-- Batch convert images to PDF
-- Automatic transparency handling for JPG conversion
-
-## Requirements
-
-- Python 3.8 or higher (for running from source)
-- Windows 10/11 (for EXE file)
-
-## Dependencies
-
-- Pillow: Image processing
-- python-docx: Word document handling
-- openpyxl: Excel file handling
-- PyPDF2: PDF manipulation
-- pdf2docx: PDF to Word conversion
-- img2pdf: Image to PDF conversion
-- reportlab: PDF generation
-- python-magic: File type detection
-- customtkinter: Modern GUI (optional)
-
-## Notes
-
-### Word to PDF Conversion
-- On Windows, Word to PDF conversion works best with Microsoft Word installed
-- Without Word, a basic PDF is generated using reportlab
-
-### PDF to Word Conversion
-- Conversion quality depends on the PDF structure
-- Works best with text-based PDFs
-- Scanned PDFs may require OCR (not included)
-
-## Troubleshooting
-
-### Import Errors
-If you encounter import errors, ensure all dependencies are installed:
 ```bash
 pip install -r requirements.txt
 ```
 
-### PyMuPDF for PDF to Image
-For better PDF to image conversion, install PyMuPDF:
+### 2. 啟動應用
+
+**方法 1: 使用啟動腳本 (Windows)**
 ```bash
-pip install PyMuPDF
+run_web.bat
 ```
 
-### Windows Defender / Antivirus
-The built EXE might be flagged by antivirus software. This is a false positive common with PyInstaller applications. You can:
-- Add an exception in your antivirus
-- Build with code signing (requires certificate)
+**方法 2: 使用 Python 腳本**
+```bash
+python run_web.py
+```
 
-## License
+**方法 3: 直接運行**
+```bash
+python app.py
+```
 
-This project is provided as-is for personal and commercial use.
+### 3. 訪問應用
 
-## Contributing
+在瀏覽器中打開: `http://localhost:5000`
 
-Contributions are welcome! Feel free to submit issues or pull requests.
+## 📁 專案結構
 
-## Future Enhancements
+```
+Document-Converter/
+│
+├── app.py                      # 主入口文件
+├── run_web.py                  # 啟動腳本 (Python)
+├── run_web.bat                 # 啟動腳本 (Windows)
+├── requirements.txt            # Python 依賴
+├── .gitignore                  # Git 忽略規則
+│
+├── backend/                    # 後端目錄
+│   ├── app.py                  # Flask API 服務器
+│   ├── config.py               # 配置管理
+│   ├── converters/             # 轉換器模組
+│   │   ├── __init__.py
+│   │   ├── document_converter.py
+│   │   └── image_converter.py
+│   └── utils/                  # 工具模組
+│       ├── __init__.py
+│       └── file_detector.py
+│
+├── frontend/                   # 前端目錄
+│   ├── templates/
+│   │   └── index.html         # 主頁面
+│   └── static/
+│       ├── css/
+│       │   └── style.css      # 樣式表
+│       └── js/
+│           └── app.js         # 前端邏輯
+│
+├── docs/                       # 文檔目錄
+│   ├── README_WEB.md          # Web 版詳細說明
+│   └── PROJECT_ARCHITECTURE.md # 架構文檔
+│
+├── uploads/                    # 上傳文件暫存 (自動生成)
+└── outputs/                    # 轉換結果暫存 (自動生成)
+```
 
-- [ ] OCR support for scanned PDFs
-- [ ] More document formats (RTF, ODT, etc.)
-- [ ] Video/Audio format support
-- [ ] Cloud storage integration
-- [ ] Drag and drop interface
-- [ ] Custom conversion settings
-- [ ] Multi-language support
+## 📝 支援的格式
 
-## Author
+### 文檔類
+- **PDF** ↔ DOCX, XLSX, PNG, JPG
+- **DOCX** ↔ PDF
+- **XLSX** ↔ PDF
 
-Created with ❤️ for universal file format conversion needs.
+### 圖片類
+- **PNG, JPG, JPEG, BMP, TIFF, GIF, WEBP, ICO** 之間互相轉換
+- **圖片** → PDF
+
+## 🔧 API 端點
+
+| 方法 | 路徑 | 說明 |
+|------|------|------|
+| GET | `/` | 主頁面 |
+| GET | `/api/formats` | 獲取支援的格式 |
+| POST | `/api/detect` | 上傳並偵測文件格式 |
+| POST | `/api/convert` | 轉換文件 |
+| GET | `/api/download/<session_id>/<filename>` | 下載轉換後的文件 |
+| DELETE | `/api/cleanup/<session_id>` | 清理會話文件 |
+
+## 🛠️ 技術棧
+
+### 前端
+- HTML5
+- CSS3 (CSS Variables, Flexbox, Grid)
+- JavaScript (Vanilla JS)
+- Fetch API
+
+### 後端
+- Python 3.8+
+- Flask 3.0+
+- Flask-CORS
+- Pillow (圖片處理)
+- python-docx (Word 處理)
+- openpyxl (Excel 處理)
+- PyPDF2 (PDF 處理)
+- python-magic (格式偵測)
+
+## 📦 生產環境部署
+
+### 使用 Gunicorn
+
+```bash
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
+```
+
+### 使用 Docker
+
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 5000
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+```
+
+### Nginx 反向代理配置
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    client_max_body_size 50M;
+
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+
+## ⚙️ 配置說明
+
+### 環境變量
+
+- `FLASK_ENV` - 運行環境 (development/production)
+- `SECRET_KEY` - Flask 密鑰 (生產環境必須設置)
+- `MAX_CONTENT_LENGTH` - 最大文件大小 (默認 50MB)
+
+### 自定義配置
+
+編輯 `backend/config.py` 文件來修改配置:
+
+```python
+class Config:
+    MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50MB
+    UPLOAD_FOLDER = 'uploads'
+    OUTPUT_FOLDER = 'outputs'
+```
+
+## 📚 更多文檔
+
+- [Web 版詳細說明](docs/README_WEB.md)
+- [專案架構文檔](docs/PROJECT_ARCHITECTURE.md)
+
+## 🔒 安全注意事項
+
+- 文件大小限制: 50MB
+- 支援的文件類型驗證
+- 安全的文件名處理
+- 定期清理臨時文件
+- 生產環境請設置 SECRET_KEY
+
+## 🐛 故障排除
+
+### 問題: 無法啟動服務器
+**解決方案**: 
+```bash
+pip install -r requirements.txt
+```
+
+### 問題: Word 轉 PDF 失敗
+**解決方案**: 需要安裝 LibreOffice 或 Microsoft Word
+
+### 問題: 文件上傳失敗
+**解決方案**: 檢查文件大小是否超過 50MB 限制
+
+## 📄 授權
+
+MIT License
+
+## 🤝 貢獻
+
+歡迎提交 Issue 和 Pull Request！
+
+## 📧 聯繫方式
+
+如有問題或建議，請通過 GitHub Issues 聯繫。
+
+---
+
+**享受使用 Universal File Converter！** 🎉
