@@ -154,6 +154,13 @@ body {
     margin-bottom: 2rem;
 }
 
+.upload-tip {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-top: 1rem;
+    margin-bottom: 0;
+}
+
 /* Files Section */
 .files-section {
     margin-bottom: 2rem;
@@ -242,13 +249,15 @@ body {
 /* Conversion Section */
 .conversion-section {
     margin-bottom: 2rem;
+    animation: fadeIn 0.3s ease;
 }
 
 .conversion-form {
     background: var(--surface);
     border-radius: 16px;
     padding: 2rem;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-lg);
+    border: 2px solid var(--primary-color);
 }
 
 .form-group {
@@ -259,6 +268,7 @@ body {
     display: block;
     font-weight: 600;
     margin-bottom: 0.5rem;
+    font-size: 1.1rem;
 }
 
 .form-select {
@@ -323,6 +333,13 @@ body {
     padding: 1rem 1.5rem;
     font-size: 1.125rem;
     justify-content: center;
+    box-shadow: var(--shadow-lg);
+    transform: scale(1);
+    transition: all 0.2s ease;
+}
+
+.btn-large:hover:not(:disabled) {
+    transform: scale(1.02);
 }
 
 .btn-icon {
@@ -375,6 +392,46 @@ body {
     flex-direction: column;
     gap: 1rem;
     margin-bottom: 2rem;
+}
+
+.batch-download-btn {
+    margin-bottom: 0.5rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: var(--shadow-lg);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2), var(--shadow-lg);
+    }
+}
+
+.results-separator {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin: 1rem 0;
+    position: relative;
+}
+
+.results-separator::before,
+.results-separator::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.results-separator::before {
+    left: 0;
+}
+
+.results-separator::after {
+    right: 0;
 }
 
 .result-item {
@@ -431,6 +488,27 @@ body {
 
 .result-status.error {
     color: var(--danger-color);
+}
+
+.error-details {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 8px;
+    border-left: 3px solid var(--danger-color);
+}
+
+.error-reason {
+    font-weight: 600;
+    color: var(--danger-color);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.error-solution {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.5;
 }
 
 /* Footer */

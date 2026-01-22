@@ -10,10 +10,11 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from flask import Flask, request, jsonify, send_file, render_template
+from flask import Flask, request, jsonify, send_file, render_template, after_this_request
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import shutil
+import zipfile
 from apscheduler.schedulers.background import BackgroundScheduler
 
 # Import converters and utilities
@@ -207,6 +208,112 @@ def download_file(session_id, filename):
         )
     
     except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/download-batch', methods=['POST'])
+def download_batch():
+    """Download multiple files as a ZIP archive"""
+    zip_path = None
+    try:
+        data = request.get_json()
+        print(f"[BATCH DOWNLOAD] Received request with data: {data}")
+        
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+        
+        files_info = data.get('files', [])
+        print(f"[BATCH DOWNLOAD] Files to process: {len(files_info)}")
+        
+        if not files_info:
+            return jsonify({'success': False, 'error': 'No files specified'}), 400
+        
+        # Create a temporary ZIP file
+        import time
+        
+        timestamp = int(time.time())
+        zip_filename = f'converted_files_{timestamp}.zip'
+        zip_path = app.config['OUTPUT_FOLDER'] / zip_filename
+        print(f"[BATCH DOWNLOAD] Creating ZIP at: {zip_path}")
+        
+        # Create ZIP archive
+        files_added = 0
+        missing_files = []
+        with zipfile.ZipFile(str(zip_path), 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for file_info in files_info:
+                session_id = file_info.get('session_id')
+                filename = file_info.get('filename')
+                
+                if not session_id or not filename:
+                    print(f"[BATCH DOWNLOAD] Skipping invalid file info: {file_info}")
+                    continue
+                
+                file_path = app.config['OUTPUT_FOLDER'] / session_id / secure_filename(filename)
+                print(f"[BATCH DOWNLOAD] Looking for: {file_path}")
+                
+                if file_path.exists():
+                    # Add file to ZIP with just the filename (no session path)
+                    zipf.write(str(file_path), arcname=filename)
+                    files_added += 1
+                    print(f"[BATCH DOWNLOAD] Added: {filename}")
+                else:
+                    missing_files.append(str(file_path))
+                    print(f"[BATCH DOWNLOAD] Missing: {file_path}")
+        
+        print(f"[BATCH DOWNLOAD] Files added: {files_added}, Missing: {len(missing_files)}")
+        
+        # Check if any files were added
+        if files_added == 0:
+            if zip_path.exists():
+                zip_path.unlink()
+            error_msg = f'No files found to download. Missing files: {missing_files}'
+            print(f"[BATCH DOWNLOAD] ERROR: {error_msg}")
+            return jsonify({'success': False, 'error': error_msg}), 404
+        
+        # Get ZIP file size
+        zip_size = zip_path.stat().st_size
+        print(f"[BATCH DOWNLOAD] ZIP created successfully: {zip_size} bytes")
+        
+        # Send the ZIP file using send_file with as_attachment
+        # Flask will handle file closing properly
+        print(f"[BATCH DOWNLOAD] Sending file...")
+        
+        @after_this_request
+        def cleanup_zip(response):
+            """Cleanup ZIP file after response is sent"""
+            def remove_file(path):
+                try:
+                    import time
+                    time.sleep(1)  # Give time for download to start
+                    if path.exists():
+                        path.unlink()
+                        print(f"[BATCH DOWNLOAD] Cleaned up ZIP file: {path}")
+                except Exception as e:
+                    print(f"[BATCH DOWNLOAD] Cleanup error: {e}")
+            
+            import threading
+            threading.Thread(target=remove_file, args=(zip_path,)).start()
+            return response
+        
+        return send_file(
+            str(zip_path),
+            as_attachment=True,
+            download_name=zip_filename,
+            mimetype='application/zip'
+        )
+    
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"[BATCH DOWNLOAD] EXCEPTION: {e}")
+        print(f"[BATCH DOWNLOAD] Traceback:\n{error_trace}")
+        
+        # Clean up ZIP file on error
+        if zip_path and zip_path.exists():
+            try:
+                zip_path.unlink()
+            except Exception:
+                pass
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
