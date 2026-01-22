@@ -128,7 +128,7 @@ def convert_file():
         output_folder.mkdir(exist_ok=True)
         
         base_name = Path(filename).stem
-        output_filename = f"{base_name}.{target_format.lower()}"
+        output_filename = secure_filename(f"{base_name}.{target_format.lower()}") or f"{base_name}.{target_format.lower()}"
         output_path = output_folder / output_filename
         
         # Convert
