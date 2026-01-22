@@ -100,38 +100,55 @@ function handleDrop(e) {
 async function processFiles(files) {
     if (files.length === 0) return;
     
-    // For now, only handle the first file
-    const file = files[0];
-    
     try {
         showLoading();
         
-        // Upload and detect format
-        const formData = new FormData();
-        formData.append('file', file);
+        // Process all files
+        const processedFiles = [];
+        let commonType = null;
+        let commonTargets = [];
         
-        const response = await fetch('/api/detect', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const data = await response.json();
-        
-        if (!data.success) {
-            throw new Error(data.error);
+        for (const file of files) {
+            // Upload and detect format
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const response = await fetch('/api/detect', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (!data.success) {
+                throw new Error(data.error);
+            }
+            
+            processedFiles.push({
+                name: data.filename,
+                size: file.size,
+                type: data.detected_type,
+                format: data.detected_format,
+                sessionId: data.session_id,
+                availableTargets: data.available_targets
+            });
+            
+            // Track common type and targets
+            if (!commonType) {
+                commonType = data.detected_type;
+                commonTargets = data.available_targets;
+            } else {
+                // Find intersection of available targets
+                commonTargets = commonTargets.filter(t => 
+                    data.available_targets.includes(t)
+                );
+            }
         }
         
         // Update state
-        state.sessionId = data.session_id;
-        state.detectedType = data.detected_type;
-        state.detectedFormat = data.detected_format;
-        state.availableTargets = data.available_targets;
-        state.files = [{
-            name: file.name,
-            size: file.size,
-            type: data.detected_type,
-            format: data.detected_format
-        }];
+        state.files = processedFiles;
+        state.detectedType = commonType;
+        state.availableTargets = commonTargets;
         
         // Update UI
         hideLoading();
@@ -198,7 +215,7 @@ function clearFiles() {
 
 // Conversion
 async function convertFiles() {
-    if (!state.sessionId || !elements.targetFormat.value) return;
+    if (state.files.length === 0 || !elements.targetFormat.value) return;
     
     try {
         // Show progress
@@ -206,39 +223,62 @@ async function convertFiles() {
         elements.progressSection.style.display = 'block';
         updateProgress(0, '正在轉換...');
         
-        const response = await fetch('/api/convert', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                session_id: state.sessionId,
-                filename: state.files[0].name,
-                target_format: elements.targetFormat.value
-            })
-        });
+        const results = [];
+        const totalFiles = state.files.length;
         
-        const data = await response.json();
-        
-        if (!data.success) {
-            throw new Error(data.error);
+        // Convert each file
+        for (let i = 0; i < state.files.length; i++) {
+            const file = state.files[i];
+            const percent = Math.round(((i + 1) / totalFiles) * 100);
+            
+            updateProgress(percent, `正在轉換 ${i + 1}/${totalFiles}...`);
+            
+            try {
+                const response = await fetch('/api/convert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: file.sessionId,
+                        filename: file.name,
+                        target_format: elements.targetFormat.value
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error);
+                }
+                
+                results.push({
+                    success: true,
+                    filename: data.output_filename,
+                    downloadUrl: data.download_url,
+                    originalName: file.name
+                });
+            } catch (error) {
+                results.push({
+                    success: false,
+                    filename: file.name,
+                    error: error.message
+                });
+            }
         }
         
         updateProgress(100, '轉換完成');
         
-        // Show results
+        // Auto download successful files
         setTimeout(() => {
-            showResults([{
-                success: true,
-                filename: data.output_filename,
-                downloadUrl: data.download_url
-            }]);
+            autoDownloadFiles(results);
+            showResults(results);
         }, 500);
         
     } catch (error) {
         showResults([{
             success: false,
-            filename: state.files[0].name,
+            filename: '批量轉換',
             error: error.message
         }]);
     }
@@ -248,6 +288,76 @@ function updateProgress(percent, text) {
     elements.progressFill.style.width = percent + '%';
     elements.progressPercent.textContent = percent + '%';
     elements.progressText.textContent = text;
+}
+
+function autoDownloadFiles(results) {
+    /**
+     * Automatically download all successfully converted files
+     */
+    const successfulResults = results.filter(r => r.success);
+    
+    if (successfulResults.length === 0) {
+        return; // No files to download
+    }
+    
+    // Download each file with a small delay to avoid browser blocking
+    successfulResults.forEach((result, index) => {
+        setTimeout(() => {
+            const link = document.createElement('a');
+            link.href = result.downloadUrl;
+            link.download = result.filename;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            console.log(`Auto-downloading: ${result.filename}`);
+        }, index * 300); // 300ms delay between downloads
+    });
+    
+    // Show notification
+    if (successfulResults.length === 1) {
+        showNotification(`正在自動下載: ${successfulResults[0].filename}`);
+    } else {
+        showNotification(`正在自動下載 ${successfulResults.length} 個文件...`);
+    }
+}
+
+function showNotification(message, duration = 3000) {
+    /**
+     * Show a temporary notification message
+     */
+    // Remove existing notification if any
+    const existing = document.querySelector('.notification');
+    if (existing) {
+        existing.remove();
+    }
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = 'notification fade-in';
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        z-index: 10000;
+        font-size: 14px;
+        max-width: 300px;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after duration
+    setTimeout(() => {
+        notification.classList.add('fade-out');
+        setTimeout(() => notification.remove(), 300);
+    }, duration);
 }
 
 function showResults(results) {
@@ -275,9 +385,9 @@ function createResultItem(result) {
             </div>
             <div class="result-info">
                 <div class="result-filename">${result.filename}</div>
-                <div class="result-status success">轉換成功</div>
+                <div class="result-status success">轉換成功 · 已自動下載</div>
             </div>
-            <a href="${result.downloadUrl}" class="btn btn-primary" download>下載</a>
+            <a href="${result.downloadUrl}" class="btn btn-primary" download>重新下載</a>
         `;
     } else {
         div.innerHTML = `
@@ -299,12 +409,16 @@ function createResultItem(result) {
 
 // Reset
 async function resetApp() {
-    // Cleanup session
-    if (state.sessionId) {
+    // Cleanup all sessions
+    if (state.files.length > 0) {
         try {
-            await fetch(`/api/cleanup/${state.sessionId}`, {
-                method: 'DELETE'
-            });
+            for (const file of state.files) {
+                if (file.sessionId) {
+                    await fetch(`/api/cleanup/${file.sessionId}`, {
+                        method: 'DELETE'
+                    });
+                }
+            }
         } catch (error) {
             console.error('Cleanup failed:', error);
         }

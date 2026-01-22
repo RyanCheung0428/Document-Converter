@@ -84,20 +84,28 @@ class FileDetector:
         """Get all supported formats"""
         return self.SUPPORTED_FORMATS
     
-    def get_conversion_targets(self, source_format_type):
+    def get_conversion_targets(self, source_format_type, source_format=None):
         """
         Get available conversion targets based on source format type
         
         Args:
             source_format_type: 'document' or 'image'
+            source_format: specific format like 'pdf', 'docx', 'xlsx', etc.
             
         Returns:
             list: Available target formats
         """
-        if source_format_type == 'document':
-            return ['pdf', 'docx', 'xlsx', 'png', 'jpg']
-        elif source_format_type == 'image':
+        if source_format_type == 'image':
             return ['png', 'jpg', 'jpeg', 'pdf', 'bmp', 'tiff', 'gif', 'webp', 'ico']
+        elif source_format_type == 'document' and source_format:
+            if source_format == 'pdf':
+                return ['docx', 'png', 'jpg']
+            elif source_format in ['doc', 'docx']:
+                return ['pdf', 'docx']
+            elif source_format in ['xls', 'xlsx']:
+                return ['pdf', 'xlsx']
+            else:
+                return ['pdf']
         return []
     
     def is_supported(self, file_path):
