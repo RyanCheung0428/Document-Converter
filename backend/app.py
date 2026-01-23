@@ -56,7 +56,7 @@ pdf_tools = PDFTools()
 session_cleaner = SessionCleaner(
     app.config['UPLOAD_FOLDER'],
     app.config['OUTPUT_FOLDER'],
-    max_age_hours=24
+    max_age_hours=2  # 2 hours - balance between redownload availability and storage
 )
 
 if OCR_AVAILABLE:
@@ -70,7 +70,7 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(
     func=session_cleaner.cleanup_old_sessions,
     trigger="interval",
-    hours=1,  # Run cleanup every hour
+    minutes=30,  # Run cleanup every 30 minutes
     id='session_cleanup'
 )
 scheduler.start()
@@ -317,9 +317,9 @@ def download_batch():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@app.route('/api/cleanup/<session_id>', methods=['DELETE'])
+@app.route('/api/cleanup/<session_id>', methods=['DELETE', 'POST'])
 def cleanup_session(session_id):
-    """Clean up session files"""
+    """Clean up session files (supports both DELETE and POST for sendBeacon)"""
     try:
         upload_folder = app.config['UPLOAD_FOLDER'] / session_id
         output_folder = app.config['OUTPUT_FOLDER'] / session_id

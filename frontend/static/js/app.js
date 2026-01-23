@@ -84,6 +84,12 @@ function setupEventListeners() {
     
     // Theme toggle
     elements.themeToggle.addEventListener('click', toggleTheme);
+    
+    // Cleanup on page unload/close
+    window.addEventListener('beforeunload', cleanupOnUnload);
+    
+    // Cleanup on visibility change (tab close/switch)
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 }
 
 // Theme Management
@@ -657,6 +663,7 @@ function showResults(results) {
     if (hasMultipleSuccess) {
         const batchDownloadBtn = document.createElement('button');
         batchDownloadBtn.className = 'btn btn-primary btn-large batch-download-btn';
+        batchDownloadBtn.id = 'batchDownloadBtn';
         batchDownloadBtn.innerHTML = `
             <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -672,14 +679,67 @@ function showResults(results) {
         // Add separator
         const separator = document.createElement('div');
         separator.className = 'results-separator';
-        separator.textContent = '或單獨下載：';
+        separator.textContent = '個別下載：';
         elements.resultsList.appendChild(separator);
+        
+        // Add floating "Back to Top" button when there are many files
+        if (successfulResults.length > 3) {
+            showBackToTopButton();
+        }
     }
     
     results.forEach(result => {
         const resultItem = createResultItem(result);
         elements.resultsList.appendChild(resultItem);
     });
+    
+    // Scroll to top to show download button
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showBackToTopButton() {
+    // Remove existing button if any
+    const existing = document.querySelector('.back-to-top-btn');
+    if (existing) {
+        existing.remove();
+    }
+    
+    // Create back to top button
+    const backToTopBtn = document.createElement('button');
+    backToTopBtn.className = 'back-to-top-btn';
+    backToTopBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+        <span class="btn-text">返回頂部</span>
+    `;
+    backToTopBtn.onclick = scrollToTop;
+    
+    document.body.appendChild(backToTopBtn);
+    
+    // Show/hide button based on scroll position
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            backToTopBtn.classList.add('visible');
+        } else {
+            backToTopBtn.classList.remove('visible');
+        }
+    });
+}
+
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Highlight the download button briefly
+    setTimeout(() => {
+        const downloadBtn = document.getElementById('batchDownloadBtn');
+        if (downloadBtn) {
+            downloadBtn.classList.add('highlight-pulse');
+            setTimeout(() => {
+                downloadBtn.classList.remove('highlight-pulse');
+            }, 2000);
+        }
+    }, 500);
 }
 
 function createResultItem(result) {
@@ -727,6 +787,12 @@ function createResultItem(result) {
 
 // Reset
 async function resetApp() {
+    // Remove back-to-top button if it exists
+    const backToTopBtn = document.querySelector('.back-to-top-btn');
+    if (backToTopBtn) {
+        backToTopBtn.remove();
+    }
+    
     // Cleanup all sessions
     if (state.files.length > 0) {
         try {
@@ -779,6 +845,46 @@ function hideLoading() {
 
 function showError(message) {
     alert(message);
+}
+
+// Cleanup handlers
+function cleanupOnUnload(event) {
+    // Use sendBeacon for reliable cleanup on page unload
+    if (state.files.length > 0) {
+        for (const file of state.files) {
+            if (file.sessionId) {
+                // sendBeacon is more reliable than fetch for beforeunload
+                navigator.sendBeacon(`/api/cleanup/${file.sessionId}`);
+            }
+        }
+    }
+}
+
+let visibilityTimer = null;
+
+function handleVisibilityChange() {
+    if (document.hidden) {
+        // User switched away or minimized - set a timer
+        // If they don't come back within 5 minutes, cleanup
+        visibilityTimer = setTimeout(() => {
+            if (state.files.length > 0) {
+                for (const file of state.files) {
+                    if (file.sessionId) {
+                        fetch(`/api/cleanup/${file.sessionId}`, {
+                            method: 'DELETE',
+                            keepalive: true
+                        }).catch(err => console.error('Cleanup failed:', err));
+                    }
+                }
+            }
+        }, 5 * 60 * 1000); // 5 minutes
+    } else {
+        // User came back - cancel the cleanup timer
+        if (visibilityTimer) {
+            clearTimeout(visibilityTimer);
+            visibilityTimer = null;
+        }
+    }
 }
 
 // Initialize app

@@ -511,6 +511,72 @@ body {
     line-height: 1.5;
 }
 
+/* Back to Top Button */
+.back-to-top-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 60px;
+    height: 60px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+}
+
+.back-to-top-btn.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.back-to-top-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+}
+
+.back-to-top-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.back-to-top-btn .btn-text {
+    font-size: 0.65rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* Highlight animation for batch download button */
+@keyframes highlightPulse {
+    0%, 100% {
+        box-shadow: var(--shadow-lg);
+    }
+    25%, 75% {
+        box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.3), var(--shadow-lg);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(37, 99, 235, 0.2), var(--shadow-lg);
+    }
+}
+
+.highlight-pulse {
+    animation: highlightPulse 1.5s ease-in-out;
+}
+
 /* Footer */
 .footer {
     text-align: center;
@@ -580,5 +646,21 @@ body {
 
     .conversion-form {
         padding: 1.5rem;
+    }
+
+    .back-to-top-btn {
+        bottom: 1rem;
+        right: 1rem;
+        width: 56px;
+        height: 56px;
+    }
+
+    .back-to-top-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .back-to-top-btn .btn-text {
+        font-size: 0.6rem;
     }
 }

@@ -19,7 +19,7 @@ class SessionCleaner:
         Args:
             upload_folder: Path to uploads directory
             output_folder: Path to outputs directory
-            max_age_hours: Maximum age of sessions in hours before cleanup
+            max_age_hours: Maximum age of sessions in hours before cleanup (can be float for fractions)
         """
         self.upload_folder = Path(upload_folder)
         self.output_folder = Path(output_folder)
