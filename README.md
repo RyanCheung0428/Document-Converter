@@ -81,14 +81,21 @@ Document-Converter/
 
 ## 📝 支援的格式
 
-### 文檔類
-- **PDF** ↔ DOCX, XLSX, PNG, JPG
-- **DOCX** ↔ PDF
-- **XLSX** ↔ PDF
+### 文檔類（純 Python，無需外部依賴）
+- **PDF** ↔ DOCX, TXT, PNG, JPG
+- **DOCX** ↔ PDF, TXT, MD
+- **TXT/MD** ↔ PDF, DOCX
+- **XLSX/XLSM** ↔ PDF, CSV
+- **CSV** → PDF, XLSX
 
 ### 圖片類
 - **PNG, JPG, JPEG, BMP, TIFF, GIF, WEBP, ICO** 之間互相轉換
 - **圖片** → PDF
+
+### 注意事項
+- 所有轉換均使用純 Python 實現，無需安裝 LibreOffice 或 Microsoft Office
+- XLSM 轉換至 XLSX/CSV/PDF 時會丟失 VBA 宏
+- 不支援舊格式（.doc, .xls, .rtf）- 請先在本機用 Office/LibreOffice 轉換成現代格式後再上傳
 
 ## 🔧 API 端點
 

@@ -9,19 +9,23 @@ import magic
 class FileDetector:
     """Detects file format automatically"""
     
-    # Supported formats mapping
+    # Supported formats mapping (pure Python only, no LibreOffice required)
     SUPPORTED_FORMATS = {
-        'document': ['docx', 'doc', 'xlsx', 'xls', 'pdf'],
+        'document': ['docx', 'xlsx', 'xlsm', 'pdf', 'txt', 'md', 'csv'],
         'image': ['png', 'jpg', 'jpeg', 'bmp', 'tiff', 'gif', 'webp', 'ico']
     }
     
     MIME_TO_FORMAT = {
-        # Documents
+        # Documents (modern formats only)
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
-        'application/msword': 'doc',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
-        'application/vnd.ms-excel': 'xls',
+        'application/vnd.ms-excel.sheet.macroEnabled.12': 'xlsm',
         'application/pdf': 'pdf',
+        'text/plain': 'txt',
+        'text/markdown': 'md',
+        'text/x-markdown': 'md',
+        'text/csv': 'csv',
+        'application/csv': 'csv',
         
         # Images
         'image/png': 'png',
@@ -98,11 +102,17 @@ class FileDetector:
         if source_format_type == 'image':
             return ['png', 'jpg', 'jpeg', 'pdf', 'bmp', 'tiff', 'gif', 'webp', 'ico']
         elif source_format_type == 'document' and source_format:
+            # Word-like formats
             if source_format == 'pdf':
-                return ['docx', 'png', 'jpg']
-            elif source_format in ['doc', 'docx']:
-                return ['pdf', 'docx']
-            elif source_format in ['xls', 'xlsx']:
+                return ['docx', 'txt', 'png', 'jpg']
+            elif source_format == 'docx':
+                return ['pdf', 'txt', 'md']
+            elif source_format in ['txt', 'md']:
+                return ['pdf', 'docx', 'txt', 'md']
+            # Excel-like formats
+            elif source_format in ['xlsx', 'xlsm']:
+                return ['pdf', 'xlsx', 'csv', 'xlsm']
+            elif source_format == 'csv':
                 return ['pdf', 'xlsx']
             else:
                 return ['pdf']

@@ -9,9 +9,9 @@ class Config:
     UPLOAD_FOLDER = 'uploads'
     OUTPUT_FOLDER = 'outputs'
     
-    # Allowed file extensions
+    # Allowed file extensions (modern formats only, pure Python support)
     ALLOWED_EXTENSIONS = {
-        'pdf', 'docx', 'doc', 'xlsx', 'xls',
+        'pdf', 'docx', 'xlsx', 'xlsm', 'txt', 'md', 'csv',
         'png', 'jpg', 'jpeg', 'bmp', 'tiff', 'gif', 'webp', 'ico'
     }
 

@@ -26,9 +26,11 @@ const FORMAT_RECOMMENDATIONS = {
     'document': {
         'pdf': 'docx',
         'docx': 'pdf',
-        'doc': 'pdf',
+        'txt': 'pdf',
+        'md': 'pdf',
         'xlsx': 'pdf',
-        'xls': 'pdf'
+        'xlsm': 'pdf',
+        'csv': 'xlsx'
     }
 };
 
