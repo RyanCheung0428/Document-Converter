@@ -52,6 +52,7 @@ const elements = {
     resultsSection: document.getElementById('resultsSection'),
     resultsList: document.getElementById('resultsList'),
     newConversionBtn: document.getElementById('newConversionBtn'),
+    reconvertBtn: document.getElementById('reconvertBtn'),
     themeToggle: document.getElementById('themeToggle')
 };
 
@@ -83,6 +84,9 @@ function setupEventListeners() {
     
     // New conversion
     elements.newConversionBtn.addEventListener('click', resetApp);
+    
+    // Reconvert (choose different format)
+    elements.reconvertBtn.addEventListener('click', reconvert);
     
     // Theme toggle
     elements.themeToggle.addEventListener('click', toggleTheme);
@@ -825,6 +829,39 @@ async function resetApp() {
     elements.resultsSection.style.display = 'none';
     elements.targetFormat.value = '';
     elements.convertBtn.disabled = true;
+}
+
+// Reconvert - allow user to select different format without re-uploading
+function reconvert() {
+    // Remove back-to-top button if it exists
+    const backToTopBtn = document.querySelector('.back-to-top-btn');
+    if (backToTopBtn) {
+        backToTopBtn.remove();
+    }
+    
+    // Check if we still have files
+    if (state.files.length === 0) {
+        showNotification('⚠️ 沒有檔案可以轉換，請重新上傳', 3000);
+        resetApp();
+        return;
+    }
+    
+    // Hide results section
+    elements.resultsSection.style.display = 'none';
+    elements.progressSection.style.display = 'none';
+    
+    // Show file list and conversion section
+    showFilesSection();
+    showConversionSection();
+    
+    // Clear target format selection
+    elements.targetFormat.value = '';
+    elements.convertBtn.disabled = true;
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    showNotification('請選擇新的目標格式', 2000);
 }
 
 // Utilities
